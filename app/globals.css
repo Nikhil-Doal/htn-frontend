@@ -128,6 +128,7 @@ body {
     0 10px 20px rgba(0,0,0,0.15),
     5px 5px 0px #c4b89c;
   transition: all 0.3s ease;
+  z-index: 2;
 }
 
 .origami-card:hover {
@@ -140,11 +141,8 @@ body {
 
 /* ===== EVENT CARD WRAPPER ===== */
 .event-card-wrapper {
-  transition: transform 0.3s ease;
-}
-
-.event-card-wrapper:hover {
-  transform: translateY(-4px);
+  position: relative;
+  z-index: 2;
 }
 
 /* ===== EVENT CARD WITH FOLD ON HOVER ===== */
@@ -160,6 +158,7 @@ body {
   background-blend-mode: soft-light, normal;
   position: relative;
   border-radius: 3px;
+  overflow: hidden;
 }
 
 /* Folded corner - the visible fold */
@@ -168,18 +167,19 @@ body {
   position: absolute;
   top: 0;
   right: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0;
-  border-color: #c4b89c #111 transparent transparent;
-  transition: border-width 0.25s ease;
-  z-index: 10;
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #e8dcc8 0%, #c4b89c 100%);
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  transform: scale(0);
+  transform-origin: top right;
+  transition: transform 0.25s ease;
+  z-index: 5;
 }
 
 /* Show fold on hover */
 .event-card-wrapper:hover .event-card::before {
-  border-width: 35px;
+  transform: scale(1);
 }
 
 /* ===== PAPER BUTTON ===== */
@@ -244,7 +244,7 @@ body {
 .paper-plane-container {
   position: fixed;
   pointer-events: none;
-  z-index: 5;
+  z-index: 1;
   filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4));
 }
 
