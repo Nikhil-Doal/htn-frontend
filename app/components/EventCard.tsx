@@ -3,6 +3,7 @@
 import { TEvent } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import {
   Clock,
   Calendar,
@@ -35,6 +36,7 @@ export default function EventCard({
   onToggleBookmark,
 }: EventCardProps) {
   const { isLoggedIn } = useAuth();
+  const [isDragging, setIsDragging] = useState(false);
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -104,8 +106,15 @@ export default function EventCard({
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ y: -4 }}
-      className="event-card-wrapper h-full"
+      whileHover={isDragging ? undefined : { y: -4 }}
+      drag
+      dragElastic={0.2}
+      dragMomentum={false}
+      dragSnapToOrigin
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={() => setIsDragging(false)}
+      style={{ touchAction: "none" }}
+      className={`event-card-wrapper h-full ${isDragging ? "dragging" : ""}`}
     >
       <article className="event-card p-6 h-full flex flex-col">
         {/* Header - Badges and Bookmark */}
