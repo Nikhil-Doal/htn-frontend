@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type DragEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TEvent, TEventType } from "./types";
 import { useAuth } from "./context/AuthContext";
@@ -24,6 +24,8 @@ export default function Home() {
   const [selectedType, setSelectedType] = useState<TEventType | "all">("all");
   const [bookmarkedEvents, setBookmarkedEvents] = useState<number[]>([]);
   const [showBookmarked, setShowBookmarked] = useState(false);
+  const [draggedEventId, setDraggedEventId] = useState<number | null>(null);
+  const [dragOverEventId, setDragOverEventId] = useState<number | null>(null);
   const { isLoggedIn } = useAuth();
   const eventRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
@@ -87,6 +89,50 @@ export default function Home() {
         ? prev.filter((id) => id !== eventId)
         : [...prev, eventId]
     );
+  };
+
+  const swapEvents = (items: TEvent[], firstId: number, secondId: number) => {
+    const firstIndex = items.findIndex((event) => event.id === firstId);
+    const secondIndex = items.findIndex((event) => event.id === secondId);
+    if (firstIndex === -1 || secondIndex === -1) return items;
+    const next = [...items];
+    [next[firstIndex], next[secondIndex]] = [next[secondIndex], next[firstIndex]];
+    return next;
+  };
+
+  const handleDragStart = (eventId: number, event: DragEvent<HTMLDivElement>) => {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", eventId.toString());
+    setDraggedEventId(eventId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedEventId(null);
+    setDragOverEventId(null);
+  };
+
+  const handleDragOver = (eventId: number, event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (draggedEventId !== eventId) {
+      setDragOverEventId(eventId);
+    }
+  };
+
+  const handleDragLeave = (eventId: number) => {
+    if (dragOverEventId === eventId) {
+      setDragOverEventId(null);
+    }
+  };
+
+  const handleDrop = (eventId: number, event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (draggedEventId === null || draggedEventId === eventId) {
+      setDragOverEventId(null);
+      return;
+    }
+    setEvents((prev) => swapEvents(prev, draggedEventId, eventId));
+    setDraggedEventId(null);
+    setDragOverEventId(null);
   };
 
   // Filter events
@@ -216,6 +262,12 @@ export default function Home() {
                     index={index}
                     bookmarkedEvents={bookmarkedEvents}
                     onToggleBookmark={toggleBookmark}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    isDragOver={dragOverEventId === event.id}
                   />
                 </div>
               ))}
