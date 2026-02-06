@@ -52,7 +52,6 @@ export default function Home() {
           throw new Error("Failed to fetch events");
         }
         const data: TEvent[] = await response.json();
-        // Sort by start_time initially
         const sortedEvents = data.sort((a, b) => a.start_time - b.start_time);
         setEvents(sortedEvents);
         toast.success("Events loaded", {
@@ -90,14 +89,10 @@ export default function Home() {
     );
   };
 
-  // Filter events based on login status, search, type, and bookmarks
+  // Filter events
   const filteredEvents = events.filter((event) => {
-    if (!isLoggedIn && event.permission === "private") {
-      return false;
-    }
-    if (showBookmarked && !bookmarkedEvents.includes(event.id)) {
-      return false;
-    }
+    if (!isLoggedIn && event.permission === "private") return false;
+    if (showBookmarked && !bookmarkedEvents.includes(event.id)) return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesName = event.name.toLowerCase().includes(query);
@@ -105,13 +100,9 @@ export default function Home() {
       const matchesSpeakers = event.speakers.some((s) =>
         s.name.toLowerCase().includes(query)
       );
-      if (!matchesName && !matchesDescription && !matchesSpeakers) {
-        return false;
-      }
+      if (!matchesName && !matchesDescription && !matchesSpeakers) return false;
     }
-    if (selectedType !== "all" && event.event_type !== selectedType) {
-      return false;
-    }
+    if (selectedType !== "all" && event.event_type !== selectedType) return false;
     return true;
   });
 
@@ -125,7 +116,6 @@ export default function Home() {
 
       <main className="pt-24 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          {/* Hero Section */}
           <HeroSection
             isLoggedIn={isLoggedIn}
             publicCount={publicEventsCount}
@@ -133,12 +123,10 @@ export default function Home() {
             onLoginClick={() => setIsLoginModalOpen(true)}
           />
 
-          {/* Stats Section */}
           {!loading && events.length > 0 && (
             <StatsSection events={events} isLoggedIn={isLoggedIn} />
           )}
 
-          {/* Filters */}
           {!loading && events.length > 0 && (
             <EventFilters
               searchQuery={searchQuery}
@@ -151,10 +139,8 @@ export default function Home() {
             />
           )}
 
-          {/* Loading State */}
           {loading && <LoadingSkeleton />}
 
-          {/* Error State */}
           {error && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -178,7 +164,6 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* No Results */}
           <AnimatePresence mode="wait">
             {!loading && !error && filteredEvents.length === 0 && (
               <motion.div
@@ -215,7 +200,6 @@ export default function Home() {
             )}
           </AnimatePresence>
 
-          {/* Events Grid */}
           {!loading && !error && filteredEvents.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvents.map((event, index) => (
@@ -238,7 +222,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Results count */}
           {!loading && !error && filteredEvents.length > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -256,7 +239,6 @@ export default function Home() {
 
       <Footer />
 
-      {/* Login Modal */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}

@@ -143,43 +143,45 @@ body {
 .event-card-wrapper {
   position: relative;
   z-index: 2;
+  transition: transform 0.2s ease;
 }
 
-/* ===== EVENT CARD WITH FOLD ON HOVER ===== */
+.event-card-wrapper:hover {
+  transform: translateY(-4px);
+}
+
+/* Dragging states */
+.event-card-wrapper.dragging {
+  opacity: 0.6;
+  transform: scale(1.02) rotate(1deg);
+  z-index: 100;
+}
+
+.event-card-wrapper.drag-over {
+  transform: scale(0.98);
+}
+
+/* ===== EVENT CARD ===== */
 .event-card {
   background:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"),
+    /* Rougher paper texture with multiple noise layers */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' stitchTiles='stitch' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23f5f0e6' surfaceScale='2'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.15'/%3E%3C/svg%3E"),
     linear-gradient(
       160deg,
       #faf7f0 0%,
-      #f5f0e6 40%,
-      #ebe5d9 100%
+      #f5f0e6 30%,
+      #ebe5d9 70%,
+      #e0d6c6 100%
     );
-  background-blend-mode: soft-light, normal;
+  background-blend-mode: overlay, soft-light, normal;
   position: relative;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-/* Folded corner - the visible fold */
-.event-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, #e8dcc8 0%, #c4b89c 100%);
-  clip-path: polygon(100% 0, 0 0, 100% 100%);
-  transform: scale(0);
-  transform-origin: top right;
-  transition: transform 0.25s ease;
-  z-index: 5;
-}
-
-/* Show fold on hover */
-.event-card-wrapper:hover .event-card::before {
-  transform: scale(1);
+  border-radius: 2px;
+  border: 1px solid #d4c4a8;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.08),
+    0 4px 12px rgba(0,0,0,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
 /* ===== PAPER BUTTON ===== */
