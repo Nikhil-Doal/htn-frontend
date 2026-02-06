@@ -3,7 +3,7 @@
 import { TEvent } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, type DragEvent } from "react";
 import {
   Clock,
   Calendar,
@@ -25,6 +25,12 @@ interface EventCardProps {
   index: number;
   bookmarkedEvents: number[];
   onToggleBookmark: (eventId: number) => void;
+  onDragStart?: (eventId: number, event: DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: (eventId: number) => void;
+  onDragOver?: (eventId: number, event: DragEvent<HTMLDivElement>) => void;
+  onDragLeave?: (eventId: number) => void;
+  onDrop?: (eventId: number, event: DragEvent<HTMLDivElement>) => void;
+  isDragOver?: boolean;
 }
 
 export default function EventCard({
@@ -34,6 +40,12 @@ export default function EventCard({
   index,
   bookmarkedEvents,
   onToggleBookmark,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  isDragOver,
 }: EventCardProps) {
   const { isLoggedIn } = useAuth();
   const [isDragging, setIsDragging] = useState(false);
@@ -107,14 +119,21 @@ export default function EventCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       whileHover={isDragging ? undefined : { y: -4 }}
-      drag
-      dragElastic={0.2}
-      dragMomentum={false}
-      dragSnapToOrigin
-      onDragStart={() => setIsDragging(true)}
-      onDragEnd={() => setIsDragging(false)}
-      style={{ touchAction: "none" }}
-      className={`event-card-wrapper h-full ${isDragging ? "dragging" : ""}`}
+      draggable
+      onDragStart={(event) => {
+        setIsDragging(true);
+        onDragStart?.(event.id, event);
+      }}
+      onDragEnd={() => {
+        setIsDragging(false);
+        onDragEnd?.(event.id);
+      }}
+      onDragOver={(event) => onDragOver?.(event.id, event)}
+      onDragLeave={() => onDragLeave?.(event.id)}
+      onDrop={(event) => onDrop?.(event.id, event)}
+      className={`event-card-wrapper h-full ${
+        isDragging ? "dragging" : ""
+      } ${isDragOver ? "drag-over" : ""}`}
     >
       <article className="event-card p-6 h-full flex flex-col">
         {/* Header - Badges and Bookmark */}
