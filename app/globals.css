@@ -144,17 +144,22 @@ body {
   position: relative;
   z-index: 2;
   transition: transform 0.2s ease;
+  cursor: grab;
 }
 
 .event-card-wrapper:hover {
   transform: translateY(-4px);
 }
 
+.event-card-wrapper:active {
+  cursor: grabbing;
+}
+
 /* Dragging states */
 .event-card-wrapper.dragging {
-  opacity: 0.6;
-  transform: scale(1.02) rotate(1deg);
+  opacity: 0.85;
   z-index: 100;
+  transition: none;
 }
 
 .event-card-wrapper.drag-over {
