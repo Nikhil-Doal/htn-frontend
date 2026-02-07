@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { X, Lock, User, Sparkles } from "lucide-react";
+import { X, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 
 interface LoginModalProps {
@@ -146,7 +146,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isLoading}
-                className="paper-btn w-full py-4 rounded text-lg font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+                className="paper-btn w-full py-4 rounded text-lg font-bold flex items-center justify-center disabled:opacity-50"
               >
                 {isLoading ? (
                   <motion.div
@@ -155,18 +155,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     className="w-5 h-5 border-2 border-[#3a3a3a] border-t-transparent rounded-full"
                   />
                 ) : (
-                  <>
-                    <Sparkles size={18} />
-                    Enter the Hackathon
-                  </>
+                  "Enter the Hackathon"
                 )}
               </motion.button>
             </form>
-
-            {/* Hint */}
-            <p className="text-center text-[#999] text-xs mt-6">
-              Hint: Check the CLAUDE.md for credentials
-            </p>
           </motion.div>
         </motion.div>
       )}

@@ -3,6 +3,7 @@ export type TPermission = "public" | "private";
 
 export type TSpeaker = {
   name: string;
+  profile_pic?: string;
 };
 
 export type TEvent = {

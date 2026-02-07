@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Sparkles, ArrowDown, Calendar } from "lucide-react";
+import { ArrowDown, Calendar } from "lucide-react";
 
 interface HeroSectionProps {
   isLoggedIn: boolean;
@@ -108,20 +108,16 @@ export default function HeroSection({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onLoginClick}
-              className="paper-btn px-6 py-3 rounded flex items-center gap-2 mx-auto"
+              className="paper-btn px-6 py-3 rounded mx-auto"
             >
-              <Sparkles size={16} />
               Unlock All Events
             </motion.button>
           </div>
         ) : (
           <div className="stats-paper px-8 py-6 rounded">
-            <div className="flex items-center gap-3 mb-2">
-              <Sparkles className="text-amber-500" size={22} />
-              <span className="font-castle text-2xl text-[#2a2a2a]">
-                Full Access Unlocked!
-              </span>
-            </div>
+            <span className="font-castle text-2xl text-[#2a2a2a] block mb-2">
+              Full Access Unlocked!
+            </span>
             <p className="text-[#065f46] font-medium text-sm">
               Viewing all {publicCount + privateCount} events including {privateCount} private ones
             </p>

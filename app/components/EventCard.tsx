@@ -3,7 +3,6 @@
 import { TEvent } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
-import { useState, type DragEvent } from "react";
 import {
   Clock,
   Calendar,
@@ -25,12 +24,6 @@ interface EventCardProps {
   index: number;
   bookmarkedEvents: number[];
   onToggleBookmark: (eventId: number) => void;
-  onDragStart?: (eventId: number, event: DragEvent<HTMLDivElement>) => void;
-  onDragEnd?: (eventId: number) => void;
-  onDragOver?: (eventId: number, event: DragEvent<HTMLDivElement>) => void;
-  onDragLeave?: (eventId: number) => void;
-  onDrop?: (eventId: number, event: DragEvent<HTMLDivElement>) => void;
-  isDragOver?: boolean;
 }
 
 export default function EventCard({
@@ -40,108 +33,64 @@ export default function EventCard({
   index,
   bookmarkedEvents,
   onToggleBookmark,
-  onDragStart,
-  onDragEnd,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-  isDragOver,
 }: EventCardProps) {
   const { isLoggedIn } = useAuth();
-  const [isDragging, setIsDragging] = useState(false);
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (timestamp: number) =>
+    new Date(timestamp).toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
       day: "numeric",
     });
-  };
 
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString("en-US", {
+  const formatTime = (timestamp: number) =>
+    new Date(timestamp).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
     });
-  };
 
-  const formatEventType = (type: string) => {
-    return type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
-  };
+  const formatEventType = (type: string) =>
+    type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
   const getDuration = (start: number, end: number) => {
-    const minutes = (end - start) / 60000;
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+    const mins = (end - start) / 60000;
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    return rem > 0 ? `${hrs}h ${rem}m` : `${hrs}h`;
   };
 
   const getEventIcon = (type: string) => {
-    switch (type) {
-      case "workshop":
-        return <BookOpen size={14} />;
-      case "activity":
-        return <Zap size={14} />;
-      case "tech_talk":
-        return <Mic2 size={14} />;
-      default:
-        return null;
-    }
+    if (type === "workshop") return <BookOpen size={14} />;
+    if (type === "activity") return <Zap size={14} />;
+    if (type === "tech_talk") return <Mic2 size={14} />;
+    return null;
   };
 
   const eventUrl = isLoggedIn ? event.private_url : event.public_url;
   const isBookmarked = bookmarkedEvents.includes(event.id);
 
-  const relatedEventsList = event.related_events
+  const relatedEvents = event.related_events
     .map((id) => allEvents.find((e) => e.id === id))
-    .filter((e): e is TEvent => e !== undefined)
-    .filter((e) => isLoggedIn || e.permission === "public");
+    .filter((e): e is TEvent => e !== undefined && (isLoggedIn || e.permission === "public"));
 
   const handleBookmark = () => {
     onToggleBookmark(event.id);
-    if (!isBookmarked) {
-      toast.success("Event bookmarked!", {
-        description: `"${event.name}" added to your favorites.`,
-      });
-    }
+    if (!isBookmarked) toast.success(`"${event.name}" bookmarked`);
   };
-
-  // Check if event is happening soon (within 24 hours)
-  const isUpcoming = event.start_time - Date.now() < 24 * 60 * 60 * 1000 && event.start_time > Date.now();
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={isDragging ? undefined : { y: -4 }}
-      draggable
-      onDragStart={(event) => {
-        setIsDragging(true);
-        onDragStart?.(event.id, event);
-      }}
-      onDragEnd={() => {
-        setIsDragging(false);
-        onDragEnd?.(event.id);
-      }}
-      onDragOver={(event) => onDragOver?.(event.id, event)}
-      onDragLeave={() => onDragLeave?.(event.id)}
-      onDrop={(event) => onDrop?.(event.id, event)}
-      className={`event-card-wrapper h-full ${
-        isDragging ? "dragging" : ""
-      } ${isDragOver ? "drag-over" : ""}`}
+      transition={{ duration: 0.4, delay: index * 0.05 }}
+      className="event-card-wrapper h-full"
     >
       <article className="event-card p-6 h-full flex flex-col">
-        {/* Header - Badges and Bookmark */}
         <div className="flex items-start justify-between gap-2 mb-4">
           <div className="flex flex-wrap gap-2">
-            <span
-              className={`badge-${event.event_type} px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1.5`}
-            >
+            <span className={`badge-${event.event_type} px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1.5`}>
               {getEventIcon(event.event_type)}
               {formatEventType(event.event_type)}
             </span>
@@ -151,30 +100,17 @@ export default function EventCard({
                 Private
               </span>
             )}
-            {isUpcoming && (
-              <span className="bg-gradient-to-r from-red-400 to-orange-400 text-white px-3 py-1.5 rounded text-xs font-bold live-indicator">
-                Soon!
-              </span>
-            )}
           </div>
-
-          <motion.button
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
+          <button
             onClick={handleBookmark}
-            className={`bookmark-btn flex-shrink-0 ${isBookmarked ? "active" : ""} text-[#ccc] hover:text-pink-400`}
-            aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+            className={`bookmark-btn ${isBookmarked ? "active" : ""} text-[#ccc] hover:text-pink-400`}
           >
             <Heart size={20} fill={isBookmarked ? "currentColor" : "none"} />
-          </motion.button>
+          </button>
         </div>
 
-        {/* Title */}
-        <h3 className="font-castle text-xl text-[#2a2a2a] mb-3 leading-tight">
-          {event.name}
-        </h3>
+        <h3 className="font-castle text-xl text-[#2a2a2a] mb-3">{event.name}</h3>
 
-        {/* Date/Time Info */}
         <div className="flex flex-wrap gap-4 text-sm text-[#555] mb-4">
           <div className="flex items-center gap-1.5">
             <Calendar size={14} className="text-[#888]" />
@@ -182,19 +118,15 @@ export default function EventCard({
           </div>
           <div className="flex items-center gap-1.5">
             <Clock size={14} className="text-[#888]" />
-            <span>
-              {formatTime(event.start_time)} - {formatTime(event.end_time)}
-            </span>
+            <span>{formatTime(event.start_time)} - {formatTime(event.end_time)}</span>
           </div>
-          <div className="stats-paper px-2 py-0.5 rounded text-xs font-medium text-[#666]">
+          <span className="stats-paper px-2 py-0.5 rounded text-xs font-medium text-[#666]">
             {getDuration(event.start_time, event.end_time)}
-          </div>
+          </span>
         </div>
 
-        {/* Divider */}
         <div className="fold-divider mb-4" />
 
-        {/* Speakers */}
         {event.speakers.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center gap-1.5 text-xs text-[#888] uppercase tracking-wider mb-2">
@@ -203,10 +135,14 @@ export default function EventCard({
             </div>
             <div className="flex flex-wrap gap-2">
               {event.speakers.map((speaker, idx) => (
-                <span
-                  key={idx}
-                  className="stats-paper px-3 py-1 rounded text-sm text-[#3a3a3a] font-medium"
-                >
+                <span key={idx} className="stats-paper px-3 py-1 rounded text-sm text-[#3a3a3a] font-medium flex items-center gap-2">
+                  {speaker.profile_pic && (
+                    <img
+                      src={speaker.profile_pic}
+                      alt={speaker.name}
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                  )}
                   {speaker.name}
                 </span>
               ))}
@@ -214,18 +150,12 @@ export default function EventCard({
           </div>
         )}
 
-        {/* Description */}
         {event.description && (
-          <p className="text-sm text-[#555] mb-4 leading-relaxed flex-grow">
-            {event.description}
-          </p>
+          <p className="text-sm text-[#555] mb-4 leading-relaxed flex-grow">{event.description}</p>
         )}
 
-        {/* Action Button */}
         {eventUrl && (
-          <motion.a
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <a
             href={eventUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -233,29 +163,24 @@ export default function EventCard({
           >
             <ExternalLink size={16} />
             {isLoggedIn ? "Join Event" : "Learn More"}
-          </motion.a>
+          </a>
         )}
 
-        {/* Related Events */}
-        {relatedEventsList.length > 0 && (
+        {relatedEvents.length > 0 && (
           <div className="mt-auto pt-4 border-t-2 border-dashed border-[#d4c4a8]">
             <div className="flex items-center gap-1.5 text-xs text-[#888] uppercase tracking-wider mb-2">
               <Link2 size={12} />
               <span>Related Events</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {relatedEventsList.slice(0, 3).map((relatedEvent) => (
-                <motion.button
-                  key={relatedEvent.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => onEventClick(relatedEvent.id)}
+              {relatedEvents.slice(0, 3).map((rel) => (
+                <button
+                  key={rel.id}
+                  onClick={() => onEventClick(rel.id)}
                   className="related-chip px-3 py-1.5 rounded text-xs"
                 >
-                  {relatedEvent.name.length > 25
-                    ? relatedEvent.name.substring(0, 25) + "..."
-                    : relatedEvent.name}
-                </motion.button>
+                  {rel.name.length > 25 ? rel.name.substring(0, 25) + "..." : rel.name}
+                </button>
               ))}
             </div>
           </div>
