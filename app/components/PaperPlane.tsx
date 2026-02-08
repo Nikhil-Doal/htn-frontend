@@ -17,8 +17,8 @@ export default function PaperPlane() {
   useEffect(() => {
     let time = 0;
     const animate = () => {
-      time += 0.03;
-      setOscillation(Math.sin(time) * 15);
+      time += 0.02;
+      setOscillation(Math.sin(time) * 8);
       return requestAnimationFrame(animate);
     };
     const id = requestAnimationFrame(animate);
@@ -31,8 +31,8 @@ export default function PaperPlane() {
         <Image
           src="/white-paper-plane.png"
           alt=""
-          width={350}
-          height={350}
+          width={450}
+          height={450}
           priority
           style={{ filter: "drop-shadow(8px 8px 16px rgba(0,0,0,0.5))" }}
         />
